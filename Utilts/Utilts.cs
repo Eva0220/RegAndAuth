@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InformBez.UUID
+namespace InformBez.Utilts
 {
-    public static class UUID
+    public static class Utilts
     {
         public static string GetUUID()
         {
