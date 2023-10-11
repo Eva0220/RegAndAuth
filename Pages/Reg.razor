@@ -1,0 +1,28 @@
+﻿@page "/reg"
+
+@inject DialogsService dialogsService
+@inject NavigationManager NavigationManager
+
+<div class="title row d-flex justify-content-center align-items-center h-100">
+    <div class="card col-4">
+        <div class="text-center text-white mt-3 fw-bold fs-4">Registration</div>
+        <EditForm Model="@user" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+            <div class="text-white mt-2">Login</div>
+            <InputText class="col-12" @bind-Value="user.Login" />
+            <div class="text-white mt-2">Password</div>
+            <InputText class="col-12" @bind-Value="user.Password" />
+            <div class="text-white mt-2">Name</div>
+            <InputText class="col-12" @bind-Value="user.Name" />
+            <div class="text-white mt-2">Phone</div>
+            <InputText class="col-12" @bind-Value="user.Phone" />
+            <div class="text-white mt-2">Email</div>
+            <InputText class="col-12" @bind-Value="user.Email" />
+            <div class="text-white mt-2">Address</div>
+            <InputText class="col-12" @bind-Value="user.Address" />
+        </EditForm>
+        <button class="btn btn-outline-light mx-auto mt-4" @onclick=TryCreateUser>Registrate</button>
+        <a class="btn text-white text-end mb-2" href='/'>Back</a>
+    </div>
+</div>

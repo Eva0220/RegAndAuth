@@ -1,5 +1,8 @@
-﻿using InformBez.Data;
+﻿using BlazorModalDialogs.Dialogs.InputDialog;
+using BlazorModalDialogs;
+using InformBez.Data;
 using Microsoft.Extensions.Logging;
+using BlazorModalDialogs.Dialogs.MessageDialog;
 
 namespace InformBez
 {
@@ -16,9 +19,10 @@ namespace InformBez
                 });
 
             builder.Services.AddMauiBlazorWebView();
+            builder.Services.AddModalDialogs(typeof(MessageDialog), typeof(InputDialog));
 
 #if DEBUG
-		builder.Services.AddBlazorWebViewDeveloperTools();
+        builder.Services.AddBlazorWebViewDeveloperTools();
 		builder.Logging.AddDebug();
 #endif
 
