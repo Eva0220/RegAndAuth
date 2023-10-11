@@ -1,42 +1,34 @@
 ﻿using InformBez.Data.Models;
 using InformBez.Repository;
-using InformBez.Utilts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using InformBez.Exceptions;
+using System.Diagnostics.Eventing.Reader;
+using System.Text.RegularExpressions;
 
 namespace InformBez.Utilts
 {
     public class UsersService
     {
+        private readonly UsersRepository usersRepository;
+
+        public UsersService()
+        {
+            usersRepository = new UsersRepository();
+        }
+
         public async Task CreateNewUser(User user)
         {
-            UsersRepository usersRepository = new();
-            var users = await usersRepository.GetUsersAsync();
-
             user.Id = Utilts.GetUUID();
-            foreach (User u in users)
+            if (user.Login == null || user.Password == null || user.Name == null || user.Email == null || user.Phone == null || user.Address == null)
             {
-                if (user.Id != u.Id || user.Login != u.Login)
-                {
-                    usersRepository.AddUser(user);
-                }
+                throw new NullFieldException("Заполните пустые поля");
             }
-
+            else if (!await usersRepository.CheckUserExist(user.Id, user.Login)) await usersRepository.AddUser(user);
+            else throw new AuthFailedException("Пользователь уже существует!");
         }
-        public async Task<bool> GetUserAuthorizeStatus(string login, string password)
-        {
-            UsersRepository usersRepository = new();
-            var users = await usersRepository.GetUsersAsync();
 
-            User user = users.FirstOrDefault(u => u.Id == Utilts.GetUUID());
-            if (user != null && user.Login == login && user.Password == password)
-            {
-                return true;
-            }
-            return false;
+        public Task<bool> GetUserAuthorizeStatus(string login, string password)
+        {
+                return usersRepository.CheckUserExist(Utilts.GetUUID(), login, password);
         }
     }
 }

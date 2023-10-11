@@ -27,11 +27,11 @@ a, .btn-link {
 }
 
 .invalid {
-    outline: 1px solid red;
+    outline: 3px solid #280869;
 }
 
 .validation-message {
-    color: red;
+    color: #280869;
 }
 
 #blazor-error-ui {
@@ -65,6 +65,19 @@ a, .btn-link {
 
 .status-bar-safe-area {
     display: none;
+}
+
+main {
+    height: 100%;
+}
+
+#app {
+    height: 100vh;
+    background: linear-gradient(180deg, #5ff2e8,#495c88); 
+}
+.title {
+    font-weight:600;
+    font-size: large;
 }
 
 @supports (-webkit-touch-callout: none) {

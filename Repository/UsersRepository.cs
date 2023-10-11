@@ -1,28 +1,28 @@
 ﻿using InformBez.Data.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace InformBez.Repository
 {
     public class UsersRepository
     {
-        public void AddUser(User user)
+        public async Task AddUser(User user)
         {
             using ApplicationContext context = new();
-            context.Users.Add(user);
-            context.SaveChanges();
+            await context.Users.AddAsync(user);
+            await context.SaveChangesAsync();
         }
 
-        public async Task<List<User>> GetUsersAsync()
+        public async Task<bool> CheckUserExist(string id, string login)
         {
             using ApplicationContext context = new();
-            List<User> users = await context.Users.AsNoTrackingWithIdentityResolution().ToListAsync();
+            return await context.Users.AnyAsync(u  => u.Id == id && u.Login == login);
+        }
 
-            return users;
+        public async Task<bool> CheckUserExist(string id, string login, string password)
+        {
+            using ApplicationContext context = new();
+
+            return await context.Users.AnyAsync(u  => u.Id == id && u.Login == login && u.Password == password);
         }
     }
 }
