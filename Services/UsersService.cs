@@ -18,6 +18,7 @@ namespace InformBez.Utilts
         public async Task CreateNewUser(User user)
         {
             user.Id = Utilts.GetUUID();
+            user.Password = Utilts.GetHashPassword(user.Password);
             if (user.Login == null || user.Password == null || user.Name == null || user.Email == null || user.Phone == null || user.Address == null)
             {
                 throw new NullFieldException("Заполните пустые поля");

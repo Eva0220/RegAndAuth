@@ -25,7 +25,7 @@ namespace InformBez.Utilts
 
             return proc.StandardOutput.ReadToEnd().Replace("UUID", string.Empty).Trim().ToUpper();
         }
-        static byte[] GenerateSalt()
+        public static byte[] GenerateSalt()
         {
             const int SaltLength = 64;
             byte[] salt = new byte[SaltLength];
