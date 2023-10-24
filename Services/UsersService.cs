@@ -3,6 +3,7 @@ using InformBez.Repository;
 using InformBez.Exceptions;
 using System.Diagnostics.Eventing.Reader;
 using System.Text.RegularExpressions;
+using System.Text.Json;
 
 namespace InformBez.Utilts
 {
@@ -15,18 +16,16 @@ namespace InformBez.Utilts
             usersRepository = new UsersRepository();
         }
 
+        public static User DeepCopyJSON<User>(User user)
+        {
+            var jsonString = JsonSerializer.Serialize(user);
+
+            return JsonSerializer.Deserialize<User>(jsonString);
+        }
+
         public async Task CreateNewUser(User user)
         {
-            User user1 = new()
-            { 
-                Id = Utilts.GetUUID(),
-                Login = user.Login,
-                Password = Utilts.GetHashPassword(user.Password),
-                Name = user.Name,
-                Phone = user.Phone,
-                Email = user.Email,
-                Address = user.Address,
-            };
+            var user1 = DeepCopyJSON<User>(user);
             if (user1.Login == null || user1.Password == null || user1.Name == null || user1.Email == null || user1.Phone == null || user1.Address == null)
             {
                 throw new NullFieldException("Заполните пустые поля");
