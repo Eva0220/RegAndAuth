@@ -11,8 +11,10 @@
     <ValidationSummary />
             <div class="text-white mt-2">Login</div>
             <InputText class="col-12" @bind-Value="user.Login" />
+            <label class="l">Логин должен состоять из 4 цифр</label>
             <div class="text-white mt-2">Password</div>
             <InputText class="col-12" @bind-Value="user.Password" />
+            <label class="l">Пароль должен состоять из 6 знаков: цифры и буквы</label>
             <div class="text-white mt-2">Name</div>
             <InputText class="col-12" @bind-Value="user.Name" />
             <div class="text-white mt-2">Phone</div>

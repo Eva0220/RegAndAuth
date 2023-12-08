@@ -15,14 +15,28 @@ namespace InformBez.Repository
         public async Task<bool> CheckUserExist(string id, string login)
         {
             using ApplicationContext context = new();
-            return await context.Users.AnyAsync(u  => u.Id == id && u.Login == login);
+            return await context.Users.AnyAsync(u => u.Id == id && u.Login == login);
         }
 
         public async Task<bool> CheckUserExist(string id, string login, string password)
         {
             using ApplicationContext context = new();
 
-            return await context.Users.AnyAsync(u  => u.Id == id && u.Login == login && u.Password == password);
+            return await context.Users.AnyAsync(u => u.Id == id && u.Login == login && u.Password == password);
         }
+
+        public static async Task<User> GetUserByID(string id)
+        {
+            using ApplicationContext context = new();
+            User user = new();
+            user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            return user;
+        }
+
+        public static List<User> GetUsers() 
+            {
+            using ApplicationContext context = new();
+            return context.Users.ToList();
+            }
     }
 }

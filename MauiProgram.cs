@@ -20,9 +20,10 @@ namespace InformBez
 
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddModalDialogs(typeof(MessageDialog), typeof(InputDialog));
+            builder.Services.AddScoped<Radzen.DialogService>();
 
 #if DEBUG
-        builder.Services.AddBlazorWebViewDeveloperTools();
+            builder.Services.AddBlazorWebViewDeveloperTools();
 		builder.Logging.AddDebug();
 #endif
 

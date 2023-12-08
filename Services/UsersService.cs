@@ -38,7 +38,8 @@ namespace InformBez.Utilts
 
         public Task<bool> GetUserAuthorizeStatus(string login, string password)
         {
-                return usersRepository.CheckUserExist(Utilts.GetUUID(), login, password);
+            password = Utilts.GetHashPassword(password);
+            return usersRepository.CheckUserExist(Utilts.GetUUID(), login, password);
         }
     }
 }
