@@ -1,5 +1,6 @@
 ﻿@page "/TextEditor"
 
+@using InformBez.Services;
 @using Microsoft.JSInterop
 @using System.Text;
 @using InformBez.Data.Models
@@ -9,10 +10,11 @@
 @using Radzen;
 @using BlazorModalDialogs.Dialogs.MessageDialog
 @inject IJSRuntime JSRuntime
+@inject FileManager FileManager
 @inject DialogsService dialogsService
 
 <div class="col-4">
-    <InputFile OnChange="HandleFileChange" class="btn-open" style="color:#280869"></InputFile>
+    <InputFile OnChange="OnChangeFile" class="btn-open" style="color:#280869"></InputFile>
 </div>
 <div class="text-center">
     <h4 class="text-decoration-underline" style="color:#280869;">Text Editor</h4>
@@ -22,12 +24,12 @@
     @if (user.Role == Data.userRole.User)
     {
         <h6 class="text-center" style="color: #280869">Вам доступно право только на чтение файлов</h6>
-        <RadzenHtmlEditor @ref=@htmlEditor @bind-Value="fileContent" rows="20"></RadzenHtmlEditor>
+        <RadzenHtmlEditor @ref=@htmlEditor @bind-Value="content" rows="20"></RadzenHtmlEditor>
     }
     @if (user.Role == Data.userRole.Admin)
     {
         <h6 class="text-center" style="color: #280869">Вам доступно право на чтение и запись файлов</h6>
-        <RadzenHtmlEditor @ref=@htmlEditor @bind-Value="fileContent" rows="20"></RadzenHtmlEditor>
+        <RadzenHtmlEditor @ref=@htmlEditor @bind-Value="content" rows="20"></RadzenHtmlEditor>
         <div class="">
         @* <pre class="text-center"> *@
             <div class="justify-content-center align-content-center">
@@ -52,7 +54,7 @@
 
 @code {
     RadzenHtmlEditor htmlEditor;
-    private string fileContent = "";
+    private string content = "";
     public string _fileName;
     private bool isFileSaved;
     private bool isFileDownloaded;
@@ -60,82 +62,54 @@
     private bool checkCurrentFile;
     private static User user = new();
     private static bool IsInitialized;
-    private readonly FileRepository fileRepository = new();
 
-    private FileChecker checker = new();
-
-
-    private async Task CreateFile()
-    {
-        if (string.IsNullOrEmpty(_fileName))
-        {
-            _fileName = await GenerateFileName();
-        }
-        var downloadsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
-        var filePath = Path.Combine(downloadsFolder, _fileName);
-
-        using (FileStream fstream = new FileStream(filePath, FileMode.OpenOrCreate))
-        {
-            var buffer = Encoding.UTF8.GetBytes(fileContent);
-            await fstream.WriteAsync(buffer);
-            fstream.Close();
-        }
-
-
-        try
-        {
-            await checker.OnCreateFile(filePath);
-
-        }
-        catch (Exception ex)
-        {
-            await dialogsService.Show<MessageDialog, MessageDialogParameters, object>(new MessageDialogParameters { Title = "Ошибка", Message = ex.Message });
-        }
-
-        fileContent = "";
-    }
-
-    private async Task HandleFileChange(InputFileChangeEventArgs e)
-    {
-        _fileName = e.File.Name;
-        var downloadsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
-        var filePath = Path.Combine(downloadsFolder, _fileName);
-
-        try
-        {
-            await checker.Check(filePath);
-        }
-        catch (Exception ex)
-        {
-            await dialogsService.Show<MessageDialog, MessageDialogParameters, object>(new MessageDialogParameters { Message = "Данный файл невозможно открыть, так как он был изменен вне программы" });
-            return;
-        }
-
-        var file = e.File;
-
-        var buffer = new byte[file.Size];
-        await file.OpenReadStream().ReadAsync(buffer);
-        fileContent = Encoding.UTF8.GetString(buffer);
-    }
 
     private async Task SaveFile()
     {
-        var buffer = Encoding.UTF8.GetBytes(fileContent);
-        var downloadsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
-        var filePath = Path.Combine(downloadsFolder, _fileName);
-        await File.WriteAllBytesAsync(filePath, buffer);
-
         try
         {
-            await checker.OnSaveFile(filePath);
+            var f = new FileInfo();
+            if (File.Exists(FileManager.FilePath))
+            {
+                await FileManager.Save(content);
+            }
+            else
+            {
+                return;
+            }
         }
         catch (Exception ex)
         {
-            await dialogsService.Show<MessageDialog, MessageDialogParameters, object>(new MessageDialogParameters { Title = "Ошибка", Message = ex.Message });
+            await dialogsService.Show<MessageDialog, MessageDialogParameters, object>(new MessageDialogParameters { Message = ex.Message});
+            return;
         }
 
-        isFileSaved = true;
+    }
 
+    private async Task CreateFile()
+    {
+        try
+        {
+            await FileManager.CreateFile(content);
+        }
+        catch (Exception ex)
+        {
+            await dialogsService.Show<MessageDialog, MessageDialogParameters, object>(new MessageDialogParameters { Message = ex.Message});
+            return;
+        }
+    }
+
+    private async Task OnChangeFile(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            content = await FileManager.Change(e.File.Name);
+        }
+        catch (Exception ex)
+        {
+            await dialogsService.Show<MessageDialog, MessageDialogParameters, object>(new MessageDialogParameters { Message = ex.Message });
+            return;
+        }
     }
 
     private async void ChangeRole()
@@ -156,62 +130,7 @@
     {
         user.Id = Utilts.GetUUID();
         user = await UsersRepository.GetUserByID(user.Id);
+        FileManager.SetTemplateToFileName(user.Name);
         IsInitialized = true;
     }
-
-    private async Task<string> GenerateFileName()
-    {
-        return $"{user.Name}-{DateTime.Now.ToString("dd-MM-yyyy-hh-mm-ss")}.secret";
-    }
-    public class FileChecker
-    {
-        private ApplicationContext context = new();
-
-        public async Task<bool> Check(string path)
-        {
-            var fileInfo = new System.IO.FileInfo(path);
-            if (!fileInfo.Exists) throw new NotImplementedException("File could not be opened");
-
-            var file = context.Files.FirstOrDefault(f=> f.Name == fileInfo.FullName) ?? throw new Exception("File not found");
-
-            if (file.ModificatedTime != fileInfo.LastWriteTime) throw new Exception("File has been modified from outside");
-            return true;
-        }
-
-        public async Task OnSaveFile(string fullPath)
-        {
-            var fileModel = context.Files.FirstOrDefault(f => f.Name == fullPath);
-            var fileInfo = new System.IO.FileInfo(fullPath);
-
-            if (!fileInfo.Exists || fileModel is null) throw new Exception("File not found");
-
-            fileModel.ModificatedTime = fileInfo.LastWriteTime;
-
-            context.Files.Update(fileModel);
-        }
-
-        public async Task OnCreateFile(string fullPath)
-        {
-            var fileModel = context.Files.FirstOrDefault(f => f.Name ==fullPath);
-            var fileInfo = new System.IO.FileInfo(fullPath);
-
-            if (!fileInfo.Exists) throw new Exception("File not found");
-            if (fileModel != null)
-            {
-                await OnSaveFile(fullPath);
-                return;
-            }
-
-            fileModel = new()
-            {
-                ModificatedTime = fileInfo.LastWriteTime,
-                Name = fileInfo.FullName
-            };
-
-            await context.Files.AddAsync(fileModel);
-            context.SaveChanges();
-        }
-    }
 }
-
-
