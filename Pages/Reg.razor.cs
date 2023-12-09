@@ -16,7 +16,7 @@ namespace InformBez.Pages
         }
         private void HandleValidSubmit()
         {
-            // ЗАДАЧА: обработать данные формы
+
         }
 
         public async Task TryCreateUser()

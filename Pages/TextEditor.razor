@@ -1,0 +1,136 @@
+﻿@page "/TextEditor"
+
+@using InformBez.Services;
+@using Microsoft.JSInterop
+@using System.Text;
+@using InformBez.Data.Models
+@using InformBez.Repository
+@using System.Text.Json;
+@using InformBez.Utilts;
+@using Radzen;
+@using BlazorModalDialogs.Dialogs.MessageDialog
+@inject IJSRuntime JSRuntime
+@inject FileManager FileManager
+@inject DialogsService dialogsService
+
+<div class="col-4">
+    <InputFile OnChange="OnChangeFile" class="btn-open" style="color:#280869"></InputFile>
+</div>
+<div class="text-center">
+    <h4 class="text-decoration-underline" style="color:#280869;">Text Editor</h4>
+</div>
+@if (IsInitialized)
+{
+    @if (user.Role == Data.userRole.User)
+    {
+        <h6 class="text-center" style="color: #280869">Вам доступно право только на чтение файлов</h6>
+        <RadzenHtmlEditor @ref=@htmlEditor @bind-Value="content" rows="20"></RadzenHtmlEditor>
+    }
+    @if (user.Role == Data.userRole.Admin)
+    {
+        <h6 class="text-center" style="color: #280869">Вам доступно право на чтение и запись файлов</h6>
+        <RadzenHtmlEditor @ref=@htmlEditor @bind-Value="content" rows="20"></RadzenHtmlEditor>
+        <div class="">
+        @* <pre class="text-center"> *@
+            <div class="justify-content-center align-content-center">
+                <button style="background-color: #280869; color: white;  border-radius: .25rem" @onclick="SaveFile" class="btn-download btn-lg mt-4">Save</button>
+                <button style="background-color: #280869; color: white;  border-radius: .25rem" @onclick="CreateFile" class="btn-download btn-lg mt-4">Create</button>
+            </div>
+        @* </pre> *@
+        </div>
+        <div class="text-center">
+            <a class="btn text-center mt-3 col-2" style="background-color: #280869; color: white;  border-radius: .25rem" href="/permissions">Permissions</a>
+        </div>
+    }
+}
+
+@if (isFileSaved)
+{
+    <p class="success-message text-center" style="color:#280869">Файл сохранен!</p>
+}
+<div class="text-end">
+    <a class="btn text-center mt-2 col-1" style="background-color: #280869; color: white;  border-radius: .25rem" href="/">Exit</a>
+</div>
+
+@code {
+    RadzenHtmlEditor htmlEditor;
+    private string content = "";
+    public string _fileName;
+    private bool isFileSaved;
+    private bool isFileDownloaded;
+    private string myText;
+    private bool checkCurrentFile;
+    private static User user = new();
+    private static bool IsInitialized;
+
+
+    private async Task SaveFile()
+    {
+        try
+        {
+            var f = new FileInfo();
+            if (File.Exists(FileManager.FilePath))
+            {
+                await FileManager.Save(content);
+            }
+            else
+            {
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            await dialogsService.Show<MessageDialog, MessageDialogParameters, object>(new MessageDialogParameters { Message = ex.Message});
+            return;
+        }
+
+    }
+
+    private async Task CreateFile()
+    {
+        try
+        {
+            await FileManager.CreateFile(content);
+        }
+        catch (Exception ex)
+        {
+            await dialogsService.Show<MessageDialog, MessageDialogParameters, object>(new MessageDialogParameters { Message = ex.Message});
+            return;
+        }
+    }
+
+    private async Task OnChangeFile(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            content = await FileManager.Change(e.File.Name);
+        }
+        catch (Exception ex)
+        {
+            await dialogsService.Show<MessageDialog, MessageDialogParameters, object>(new MessageDialogParameters { Message = ex.Message });
+            return;
+        }
+    }
+
+    private async void ChangeRole()
+    {
+        if (user.Role == Data.userRole.Admin)
+        {
+            user.Role = Data.userRole.User;
+        }
+        else
+        {
+            user.Role = Data.userRole.Admin;
+        }
+        StateHasChanged();
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        user.Id = Utilts.GetUUID();
+        user = await UsersRepository.GetUserByID(user.Id);
+        FileManager.SetTemplateToFileName(user.Name);
+        IsInitialized = true;
+    }
+}

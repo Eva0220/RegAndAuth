@@ -1,16 +1,21 @@
 ﻿@page "/"
 
 @inject DialogsService dialogsService
+@inject IJSRuntime JSRuntime
 <div class="title row d-flex justify-content-center align-items-center h-100">
     <div class="card col-4">
         <div class="text-center text-white mt-3 fw-bold fs-4 ">Authorization</div>
-            <EditForm Model="@user">
-            <div class="text-white mt-2">Login</div>
-            <InputText class="col-12" @bind-Value="user.Login" />
-            <div class="text-white mt-2">Password</div>
-            <InputText class="col-12" @bind-Value="user.Password" />
-            </EditForm>
-        <button class="btn btn-outline-light mx-auto mt-4" @onclick=CheckUser>Submit</button>
+        @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+            <div class="message">@ErrorMessage</div>
+        }
+        <EditForm Model="@user">
+        <div class="text-white mt-2">Login</div>
+        <InputText class="col-12" @bind-Value="user.Login" />
+        <div class="text-white mt-2">Password</div>
+        <InputText type ="password" class="col-12" @bind-Value="user.Password" />
+        </EditForm>
+        <button class="btn btn-outline-light mx-auto mt-4" @onclick=CheckUser disabled="@isDisabled">Submit</button>
         <a class="btn text-white text-end mb-2" href="/reg">Registration</a>
     </div>
 </div>

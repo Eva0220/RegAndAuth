@@ -17,9 +17,11 @@ namespace InformBez.Data.Models
         [RegularExpression(@"^[a-zA-Z0-9]{6}$", ErrorMessage = "Неверный формат! Пароль должен содержать 6 символов: буквы и цифры.")]
         public string Password { get; set; }
         public string Name { get; set; }
+        [RegularExpression(@"^[0-9]{11}$", ErrorMessage = "Неверный формат! Телефон должен содержать 11 цифр")]
         public string Phone { get; set; }
         public string Email { get; set; }
         public string Address { get; set; }
+        public userRole Role { get; set; } = userRole.User;
 
     }
 }

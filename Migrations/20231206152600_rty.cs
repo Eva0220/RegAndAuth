@@ -5,14 +5,14 @@
 namespace InformBez.Migrations
 {
     /// <inheritdoc />
-    public partial class Email : Migration
+    public partial class rty : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "Email",
-                table: "Users",
+                name: "Hash",
+                table: "Files",
                 type: "nvarchar(max)",
                 nullable: true);
         }
@@ -21,8 +21,8 @@ namespace InformBez.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "Email",
-                table: "Users");
+                name: "Hash",
+                table: "Files");
         }
     }
 }

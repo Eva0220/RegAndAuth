@@ -34,6 +34,7 @@ a, .btn-link {
     color: #280869;
 }
 
+
 #blazor-error-ui {
     background: lightyellow;
     bottom: 0;
@@ -79,7 +80,17 @@ main {
     font-weight:600;
     font-size: large;
 }
+.l {
+    font-size:small;
+    color: white;
+}
 
+.well {
+    color: #280869;
+}
+.message {
+    color: #280869;
+}
 @supports (-webkit-touch-callout: none) {
     .status-bar-safe-area {
         display: flex;

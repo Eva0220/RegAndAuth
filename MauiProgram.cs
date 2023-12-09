@@ -1,8 +1,8 @@
 ﻿using BlazorModalDialogs.Dialogs.InputDialog;
 using BlazorModalDialogs;
-using InformBez.Data;
 using Microsoft.Extensions.Logging;
 using BlazorModalDialogs.Dialogs.MessageDialog;
+using InformBez.Services;
 
 namespace InformBez
 {
@@ -18,12 +18,22 @@ namespace InformBez
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 });
 
+            builder.Services.AddDbContext<ApplicationContext>();
+
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddModalDialogs(typeof(MessageDialog), typeof(InputDialog));
+            builder.Services.AddScoped<Radzen.DialogService>();
+
+            builder.Services.AddTransient<AttachedFilesRepository>();
+            builder.Services.AddTransient<AttachedFilesRepository>();
+            builder.Services.AddTransient<FileChecker>();
+
+            builder.Services.AddScoped<ArchiveManager>(sp => new(".zip", ".secret", ".txt"));
+            builder.Services.AddScoped<FileManager>();
 
 #if DEBUG
-        builder.Services.AddBlazorWebViewDeveloperTools();
-		builder.Logging.AddDebug();
+            builder.Services.AddBlazorWebViewDeveloperTools();
+		    builder.Logging.AddDebug();
 #endif
 
             return builder.Build();
